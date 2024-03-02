@@ -153,6 +153,7 @@ if __name__ == "__main__":
                 with_box=args.with_box,
                 with_mask=args.with_mask,
                 with_sseg=args.with_sseg,
+                name=os.path.splitext(os.path.basename(path))[0]
             )
             logger.info(
                 "{}: {} in {:.2f}s".format(

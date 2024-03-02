@@ -15,6 +15,10 @@ from ape.engine.defaults import DefaultPredictor
 from detectron2.data import MetadataCatalog
 from detectron2.utils.video_visualizer import VideoVisualizer
 from detectron2.utils.visualizer import ColorMode, Visualizer
+import clip
+
+from lvis_list import LVIS_CLASSES
+clip_pretrained, _ = clip.load("RN50x16", device='cuda', jit=False)
 
 
 def filter_instances(instances, metadata):
@@ -186,6 +190,7 @@ class VisualizationDemo(object):
         with_box=True,
         with_mask=True,
         with_sseg=True,
+        name=None,
     ):
         """
         Args:
@@ -233,6 +238,20 @@ class VisualizationDemo(object):
                 # sem_seg = cuda_grabcut(image, sem_seg > 0.5, iter=5, gamma=10, iou_threshold=0.1)
                 sem_seg = torch.cat((sem_seg, torch.ones_like(sem_seg[0:1, ...]) * 0.1), dim=0)
                 sem_seg = sem_seg.argmax(dim=0)
+
+                sem_seg = sem_seg.numpy()
+                labels, areas = np.unique(sem_seg, return_counts=True)
+                sorted_idxs = np.argsort(-areas).tolist()
+                labels = labels[sorted_idxs]
+                h, w = sem_seg.shape
+                q = torch.zeros((h, w, 512), device='cuda')
+                for label in filter(lambda l: l < len(metadata.stuff_classes), labels):
+                    mask_color = clip_pretrained.encode_text(clip.tokenize(LVIS_CLASSES[label]).cuda()).float()
+                    binary_mask = sem_seg == label
+                    q[binary_mask] = mask_color
+                q = q.permute(2, 0, 1).unsqueeze(0)
+                resized = torch.nn.functional.interpolate(q, scale_factor=0.5, mode='bilinear', align_corners=False)
+                torch.save(resized, f"clipf/{name}.pt")
                 vis_output = visualizer.draw_sem_seg(sem_seg)
             if "instances" in predictions and (with_box or with_mask):
                 instances = predictions["instances"].to(self.cpu_device)
