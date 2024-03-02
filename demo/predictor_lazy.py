@@ -18,7 +18,7 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 import clip
 
 from lvis_list import LVIS_CLASSES
-clip_pretrained, _ = clip.load("RN50x16", device='cuda', jit=False)
+clip_pretrained, _ = clip.load("ViT-B/32", device='cuda', jit=False)
 
 
 def filter_instances(instances, metadata):
