@@ -251,7 +251,7 @@ class VisualizationDemo(object):
                     q[binary_mask] = mask_color
                 q = q.permute(2, 0, 1).unsqueeze(0)
                 resized = torch.nn.functional.interpolate(q, scale_factor=0.5, mode='bilinear', align_corners=False).squeeze(0)
-                torch.save(resized.half(), f"clipf/{name}.pt")
+                torch.save(resized.half().cpu(), f"clipf/{name}.pt")
                 vis_output = visualizer.draw_sem_seg(sem_seg)
             if "instances" in predictions and (with_box or with_mask):
                 instances = predictions["instances"].to(self.cpu_device)
