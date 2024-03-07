@@ -28,6 +28,14 @@ from .deformable_detr import DeformableDETR
 from .fast_rcnn import fast_rcnn_inference
 from .segmentation import MaskHeadSmallConv, MHAttentionMap
 
+import sys
+sys.path.append('../../..')
+from coco_classes import COCO
+from ADE150 import ADE150
+cls_list = list(COCO + ADE150)
+for i in range(len(cls_list)):
+    cls_list[i] = cls_list[i].split(",")[0]
+    cls_list[i] = cls_list[i].replace("_", " ")
 
 class DeformableDETRSegmVL(DeformableDETR):
     """Implements the Deformable DETR model.
@@ -246,7 +254,7 @@ class DeformableDETRSegmVL(DeformableDETR):
                 for metadata, dataset_entity in zip(self.metadata_list, self.dataset_entities):
                     text_list += get_text_list(metadata, dataset_entity)
                 text_list = text_list[:1203+365+601]
-                text_list = text_list[:1203]
+                text_list = cls_list + text_list[:1203]
                 cache = True
 
                 # from detectron2.data.catalog import MetadataCatalog
@@ -369,6 +377,7 @@ class DeformableDETRSegmVL(DeformableDETR):
             multi_level_feats = self.neck({f: features[f] for f in self.neck.in_features})
         else:
             multi_level_feats = [feat for feat_name, feat in features.items()]
+        print("multi_level_feats", len(multi_level_feats), [x.size() for x in multi_level_feats])
         multi_level_masks = []
         multi_level_position_embeddings = []
         spatial_shapes = []

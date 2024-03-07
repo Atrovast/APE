@@ -2,7 +2,6 @@
 import atexit
 import bisect
 import gc
-import json
 import multiprocessing as mp
 import time
 from collections import deque
@@ -17,7 +16,17 @@ from detectron2.utils.video_visualizer import VideoVisualizer
 from detectron2.utils.visualizer import ColorMode, Visualizer
 import clip
 
+import sys
+sys.path.append('../')
 from lvis_list import LVIS_CLASSES
+from coco_classes import COCO
+from ADE150 import ADE150
+cls_list = list(COCO + ADE150 + LVIS_CLASSES)
+# ['bottle', 'wall', 'floor', 'floor mat', 'stereo', 'tv', 'door', 'sofa', 'table', 'piano', 'bookshelf plant', 'bowl', 'glass cup', 'clothes', 'book', 'bookshelf', 'piano chair', 'music sheet']
+for i in range(len(cls_list)):
+    cls_list[i] = cls_list[i].split(",")[0]
+    cls_list[i] = cls_list[i].replace("_", " ")
+
 clip_pretrained, _ = clip.load("ViT-B/32", device='cuda', jit=False)
 
 
@@ -208,7 +217,10 @@ class VisualizationDemo(object):
             metadata.thing_classes = text_list
             metadata.stuff_classes = text_list
         else:
-            metadata = self.metadata
+            # metadata = self.metadata
+            metadata = MetadataCatalog.get("__unused_ape_" + '123')
+            metadata.thing_classes = cls_list
+            metadata.stuff_classes = cls_list
 
         vis_output = None
         predictions = self.predictor(image, text_prompt, mask_prompt)
@@ -239,6 +251,7 @@ class VisualizationDemo(object):
                 sem_seg = torch.cat((sem_seg, torch.ones_like(sem_seg[0:1, ...]) * 0.1), dim=0)
                 sem_seg = sem_seg.argmax(dim=0)
 
+                # save clip feature
                 sem_seg = sem_seg.numpy()
                 labels, areas = np.unique(sem_seg, return_counts=True)
                 sorted_idxs = np.argsort(-areas).tolist()
@@ -255,6 +268,7 @@ class VisualizationDemo(object):
                 q1 = q.permute(2, 0, 1)
                 q1 = torch.nn.functional.interpolate(q1.unsqueeze(0), scale_factor=0.5, mode='bilinear', align_corners=False).squeeze(0)
                 torch.save(q1.half().cpu(), f"/ssd/dsh/clipf/{name}.pt")
+
                 vis_output = visualizer.draw_sem_seg(sem_seg)
             if "instances" in predictions and (with_box or with_mask):
                 instances = predictions["instances"].to(self.cpu_device)
