@@ -30,12 +30,7 @@ from .segmentation import MaskHeadSmallConv, MHAttentionMap
 
 import sys
 sys.path.append('../../..')
-from coco_classes import COCO
-from ADE150 import ADE150
-cls_list = list(COCO + ADE150)
-for i in range(len(cls_list)):
-    cls_list[i] = cls_list[i].split(",")[0]
-    cls_list[i] = cls_list[i].replace("_", " ")
+from cls_util import CLS_LIST
 
 class DeformableDETRSegmVL(DeformableDETR):
     """Implements the Deformable DETR model.
@@ -254,7 +249,7 @@ class DeformableDETRSegmVL(DeformableDETR):
                 for metadata, dataset_entity in zip(self.metadata_list, self.dataset_entities):
                     text_list += get_text_list(metadata, dataset_entity)
                 text_list = text_list[:1203+365+601]
-                text_list = cls_list + text_list[:1203]
+                text_list = CLS_LIST
                 cache = True
 
                 # from detectron2.data.catalog import MetadataCatalog

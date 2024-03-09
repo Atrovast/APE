@@ -18,14 +18,8 @@ import clip
 
 import sys
 sys.path.append('../')
-from lvis_list import LVIS_CLASSES
-from coco_classes import COCO
-from ADE150 import ADE150
-cls_list = list(COCO + ADE150 + LVIS_CLASSES)
+from cls_util import CLS_LIST
 # ['bottle', 'wall', 'floor', 'floor mat', 'stereo', 'tv', 'door', 'sofa', 'table', 'piano', 'bookshelf plant', 'bowl', 'glass cup', 'clothes', 'book', 'bookshelf', 'piano chair', 'music sheet']
-for i in range(len(cls_list)):
-    cls_list[i] = cls_list[i].split(",")[0]
-    cls_list[i] = cls_list[i].replace("_", " ")
 
 clip_pretrained, _ = clip.load("ViT-B/32", device='cuda', jit=False)
 
@@ -219,8 +213,8 @@ class VisualizationDemo(object):
         else:
             # metadata = self.metadata
             metadata = MetadataCatalog.get("__unused_ape_" + '123')
-            metadata.thing_classes = cls_list
-            metadata.stuff_classes = cls_list
+            metadata.thing_classes = CLS_LIST
+            metadata.stuff_classes = CLS_LIST
 
         vis_output = None
         predictions = self.predictor(image, text_prompt, mask_prompt)
