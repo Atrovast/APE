@@ -8,7 +8,7 @@ coco = COCO
 lvis = LVIS_CLASSES
 i21k = I21k_NAMES.values()
 
-cls_list = list(ade + coco + lvis)
+cls_list = list(coco + lvis)
 for i in range(len(cls_list)):
     cls_list[i] = cls_list[i].split(",")[0]
     cls_list[i] = cls_list[i].replace("_", " ")

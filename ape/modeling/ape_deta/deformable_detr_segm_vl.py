@@ -372,7 +372,7 @@ class DeformableDETRSegmVL(DeformableDETR):
             multi_level_feats = self.neck({f: features[f] for f in self.neck.in_features})
         else:
             multi_level_feats = [feat for feat_name, feat in features.items()]
-        print("multi_level_feats", len(multi_level_feats), [x.size() for x in multi_level_feats])
+        # print("multi_level_feats", len(multi_level_feats), [x.size() for x in multi_level_feats])
         multi_level_masks = []
         multi_level_position_embeddings = []
         spatial_shapes = []

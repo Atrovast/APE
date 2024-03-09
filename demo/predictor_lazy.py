@@ -252,16 +252,27 @@ class VisualizationDemo(object):
                 labels = labels[sorted_idxs]
                 h, w = sem_seg.shape
                 q = torch.zeros((h, w, 512), device='cuda')
+                ma, dt, id = torch.zeros((h, w), device='cuda', dtype=torch.int), {}, 1
                 all_mask = np.zeros((h, w), dtype=np.bool)
                 for label in filter(lambda lz: lz < len(CLS_LIST), labels):
                     mask_color = clip_pretrained.encode_text(clip.tokenize(CLS_LIST[label]).cuda()).float()
                     binary_mask = (sem_seg == label)
                     all_mask = all_mask | binary_mask
                     q[binary_mask] = mask_color
-                q[~all_mask] = clip_pretrained.encode_text(clip.tokenize(["background"]).cuda()).float()
-                q1 = q.permute(2, 0, 1)
-                q1 = torch.nn.functional.interpolate(q1.unsqueeze(0), scale_factor=0.5, mode='bilinear', align_corners=False).squeeze(0)
-                torch.save(q1.half().cpu(), f"/ssd/dsh/clipf/{name}.pt")
+                    ma[binary_mask] = id
+                    dt[id] = mask_color
+                    id += 1
+                bg = clip_pretrained.encode_text(clip.tokenize(["background"]).cuda()).float()
+                q[~all_mask] = bg
+                ma[~all_mask] = 0
+                dt[0] = bg
+                embd = torch.cat([dt[x] for x in range(len(dt))], dim=0)
+                embd = embd / embd.norm(dim=-1, keepdim=True)
+                # q1 = q.permute(2, 0, 1)
+                # q1 = torch.nn.functional.interpolate(q1.unsqueeze(0), scale_factor=0.5, mode='bilinear', align_corners=False).squeeze(0)
+                q1 = q / q.norm(dim=-1, keepdim=True)
+                torch.save(q1.half().cpu(), f"/ssd/dsh/clip_feat/rm/{name}.pt")
+                torch.save({'embd': embd.cpu(), 'mask': ma.cpu()}, f"/ssd/dsh/clip_feat/rmdt/{name}.pt")
 
                 vis_output = visualizer.draw_sem_seg(sem_seg)
             if "instances" in predictions and (with_box or with_mask):
