@@ -15,7 +15,7 @@ for i in range(len(cls_list)):
 
 cls_list = list(set(cls_list))
 
-rm_list = ['home', 'building']
+rm_list = ['house', 'building']
 for rm in rm_list:
     cls_list.remove(rm)
 
