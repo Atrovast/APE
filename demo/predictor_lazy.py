@@ -253,8 +253,8 @@ class VisualizationDemo(object):
                 h, w = sem_seg.shape
                 q = torch.zeros((h, w, 512), device='cuda')
                 all_mask = np.zeros((h, w), dtype=np.bool)
-                for label in filter(lambda lz: lz < 1203, labels):
-                    mask_color = clip_pretrained.encode_text(clip.tokenize(LVIS_CLASSES[label]).cuda()).float()
+                for label in filter(lambda lz: lz < len(CLS_LIST), labels):
+                    mask_color = clip_pretrained.encode_text(clip.tokenize(CLS_LIST[label]).cuda()).float()
                     binary_mask = (sem_seg == label)
                     all_mask = all_mask | binary_mask
                     q[binary_mask] = mask_color
