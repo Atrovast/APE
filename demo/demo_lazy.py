@@ -25,6 +25,8 @@ from predictor_lazy import VisualizationDemo
 # constants
 WINDOW_NAME = "APE"
 
+# usage:
+#   python demo/demo.py -i ../datasets/360/bicycle/images_4/* -o clipf/bike --feat-out /ssd/dsh/clip_feat/
 
 def setup_cfg(args):
     # load config from file and command-line arguments
