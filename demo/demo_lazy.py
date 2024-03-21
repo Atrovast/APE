@@ -68,22 +68,22 @@ def get_parser():
     parser.add_argument("--webcam", action="store_true", help="Take inputs from webcam.")
     parser.add_argument("--video-input", help="Path to video file.")
     parser.add_argument(
-        "--input",
+        "--input", '-i',
         nargs="+",
         help="A list of space separated input images; "
         "or a single glob pattern such as 'directory/*.jpg'",
     )
     parser.add_argument(
-        "--output",
+        "--output", '-o',
         default='output',
         help="A directory to save output visualizations. "
         "If not given, will show output in an OpenCV window.",
     )
 
     parser.add_argument(
-        "--confidence-threshold",
+        "--confidence-threshold", "-t",
         type=float,
-        default=0.5,
+        default=0.1,
         help="Minimum score for instance predictions to be shown",
     )
     parser.add_argument(
