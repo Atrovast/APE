@@ -61,7 +61,7 @@ def get_parser():
     parser = argparse.ArgumentParser(description="Detectron2 demo for builtin configs")
     parser.add_argument(
         "--config-file",
-        default="configs/quick_schedules/mask_rcnn_R_50_FPN_inference_acc_test.yaml",
+        default="configs/default_config.py",
         metavar="FILE",
         help="path to config file",
     )
@@ -75,7 +75,8 @@ def get_parser():
     )
     parser.add_argument(
         "--output",
-        help="A file or directory to save output visualizations. "
+        default='output',
+        help="A directory to save output visualizations. "
         "If not given, will show output in an OpenCV window.",
     )
 
@@ -96,7 +97,21 @@ def get_parser():
 
     parser.add_argument("--with-box", action="store_true", help="show box of instance")
     parser.add_argument("--with-mask", action="store_true", help="show mask of instance")
-    parser.add_argument("--with-sseg", action="store_true", help="show mask of class")
+    parser.add_argument("--with-sseg", default=True, help="show mask of class")
+
+    parser.add_argument(
+        "--feat-out",
+        default='feat-out',
+        required=True,
+        help="A directory to save APE features. "
+    )
+
+    parser.add_argument(
+        "--box-num",
+        type=int,
+        default=500,
+        help="Minimum score for instance predictions to be shown",
+    )
 
     return parser
 
@@ -121,6 +136,7 @@ def test_opencv_video_format(codec, file_ext):
 if __name__ == "__main__":
     mp.set_start_method("spawn", force=True)
     args = get_parser().parse_args()
+    args.opts.append(f"model.model_vision.select_box_nums_for_evaluation={args.box_num}")
     setup_logger(name="fvcore")
     setup_logger(name="ape")
     logger = setup_logger()
@@ -137,6 +153,7 @@ if __name__ == "__main__":
         if len(args.input) == 1:
             args.input = glob.glob(os.path.expanduser(args.input[0]), recursive=True)
             assert args.input, "The input path(s) was not found"
+        os.makedirs(args.feat_out, exist_ok=True)
         for path in tqdm.tqdm(args.input, disable=not args.output):
             # use PIL, to be consistent with evaluation
             try:
@@ -153,7 +170,8 @@ if __name__ == "__main__":
                 with_box=args.with_box,
                 with_mask=args.with_mask,
                 with_sseg=args.with_sseg,
-                name=os.path.splitext(os.path.basename(path))[0]
+                name=os.path.splitext(os.path.basename(path))[0],
+                feature_output=args.feat_out,
             )
             logger.info(
                 "{}: {} in {:.2f}s".format(
@@ -166,12 +184,15 @@ if __name__ == "__main__":
             )
 
             if args.output:
-                if os.path.isdir(args.output):
-                    assert os.path.isdir(args.output), args.output
-                    out_filename = os.path.join(args.output, os.path.basename(path))
-                else:
-                    assert len(args.input) == 1, "Please specify a directory with args.output"
-                    out_filename = args.output
+                if not os.path.exists(args.output):
+                    os.makedirs(args.output)
+                out_filename = os.path.join(args.output, os.path.basename(path))
+                # if os.path.isdir(args.output):
+                #     assert os.path.isdir(args.output), args.output
+                #     out_filename = os.path.join(args.output, os.path.basename(path))
+                # else:
+                #     assert len(args.input) == 1, "Please specify a directory with args.output"
+                #     out_filename = args.output
                 out_filename = out_filename.replace(".webp", ".png")
                 out_filename = out_filename.replace(".crdownload", ".png")
                 out_filename = out_filename.replace(".jfif", ".png")

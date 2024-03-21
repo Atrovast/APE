@@ -5,7 +5,7 @@ import gc
 import multiprocessing as mp
 import time
 from collections import deque
-
+import os
 import cv2
 import numpy as np
 import torch
@@ -20,8 +20,6 @@ import sys
 sys.path.append('../')
 from cls_util import CLS_LIST
 # ['bottle', 'wall', 'floor', 'floor mat', 'stereo', 'tv', 'door', 'sofa', 'table', 'piano', 'bookshelf plant', 'bowl', 'glass cup', 'clothes', 'book', 'bookshelf', 'piano chair', 'music sheet']
-
-clip_pretrained, _ = clip.load("ViT-B/32", device='cuda', jit=False)
 
 
 def filter_instances(instances, metadata):
@@ -194,6 +192,7 @@ class VisualizationDemo(object):
         with_mask=True,
         with_sseg=True,
         name=None,
+        feature_output=None,
     ):
         """
         Args:
@@ -244,35 +243,8 @@ class VisualizationDemo(object):
                 # sem_seg = cuda_grabcut(image, sem_seg > 0.5, iter=5, gamma=10, iou_threshold=0.1)
                 sem_seg = torch.cat((sem_seg, torch.ones_like(sem_seg[0:1, ...]) * 0.1), dim=0)
                 sem_seg = sem_seg.argmax(dim=0)
-
-                # save clip feature
-                sem_seg = sem_seg.numpy()
-                labels, areas = np.unique(sem_seg, return_counts=True)
-                sorted_idxs = np.argsort(-areas).tolist()
-                labels = labels[sorted_idxs]
-                h, w = sem_seg.shape
-                q = torch.zeros((h, w, 512), device='cuda')
-                ma, dt, id = torch.zeros((h, w), device='cuda', dtype=torch.int), {}, 1
-                all_mask = np.zeros((h, w), dtype=np.bool)
-                for label in filter(lambda lz: lz < len(CLS_LIST), labels):
-                    mask_color = clip_pretrained.encode_text(clip.tokenize(CLS_LIST[label]).cuda()).float()
-                    binary_mask = (sem_seg == label)
-                    all_mask = all_mask | binary_mask
-                    q[binary_mask] = mask_color
-                    ma[binary_mask] = id
-                    dt[id] = mask_color
-                    id += 1
-                bg = clip_pretrained.encode_text(clip.tokenize(["background"]).cuda()).float()
-                q[~all_mask] = bg
-                ma[~all_mask] = 0
-                dt[0] = bg
-                embd = torch.cat([dt[x] for x in range(len(dt))], dim=0)
-                embd = embd / embd.norm(dim=-1, keepdim=True)
-                # q1 = q.permute(2, 0, 1)
-                # q1 = torch.nn.functional.interpolate(q1.unsqueeze(0), scale_factor=0.5, mode='bilinear', align_corners=False).squeeze(0)
-                q1 = q / q.norm(dim=-1, keepdim=True)
-                torch.save(q1.half().cpu(), f"/ssd/dsh/clip_feat/rm/{name}.pt")
-                torch.save({'embd': embd.cpu(), 'mask': ma.cpu()}, f"/ssd/dsh/clip_feat/rmdt/{name}.pt")
+                # torch.save(predictions["vis_feat"].to('cpu'), f"/home/dsh/vis_feat.pt")
+                torch.save(predictions["vis_feat"].half().cpu(), os.path.join(feature_output, f"{name}.pt"))
 
                 vis_output = visualizer.draw_sem_seg(sem_seg)
             if "instances" in predictions and (with_box or with_mask):
