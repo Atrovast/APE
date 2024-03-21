@@ -273,7 +273,7 @@ def create_model(
 
         pretrained_cfg = {}
         if pretrained:
-            checkpoint_path = ''
+            checkpoint_path = '/home'
             pretrained_cfg = get_pretrained_cfg(model_name, pretrained)
             if pretrained_cfg:
                 checkpoint_path = download_pretrained(pretrained_cfg, cache_dir=cache_dir)

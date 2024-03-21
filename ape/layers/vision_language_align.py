@@ -29,6 +29,7 @@ class VisionLanguageAlign(nn.Module):
         x: visual features (bs, num_query, 256)
         embedding: language features (bs, L, 768)
         """
+        # print('vl,', x.shape, embedding.shape, self.bias_lang.data.shape)
         embedding = embedding.to(x.dtype)
 
         # norm
@@ -46,6 +47,34 @@ class VisionLanguageAlign(nn.Module):
             torch.matmul(dot_product_proj_queries, dot_product_proj_tokens.transpose(-1, -2))
             / self.log_scale.exp()
         ) + bias  # (bs, num_query, 256) x (bs, 256, L) -> (bs, num_query, L)
+        if self.clamp_dot_product:
+            dot_product_logit = torch.clamp(dot_product_logit, max=50000)
+            dot_product_logit = torch.clamp(dot_product_logit, min=-50000)
+        return dot_product_logit
+
+    def for_no_batch(self, x, embedding):
+        """
+        x: visual features (num_query, 256)
+        embedding: language features (L, 768)
+        """
+        print('vl,', x.shape, embedding.shape, self.bias_lang.data.shape)
+        embedding = embedding.to(x.dtype)
+
+        # norm
+        embedding = F.normalize(embedding, p=2, dim=-1)
+        dot_product_proj_tokens = self.dot_product_projection_text(embedding / 2.0)
+        dot_product_proj_tokens_bias = (
+            torch.matmul(embedding, self.bias_lang) + self.bias0
+        )
+
+        dot_product_proj_queries = self.dot_product_projection_image(x)
+        A = dot_product_proj_queries.shape[0]
+        bias = dot_product_proj_tokens_bias.unsqueeze(0).repeat(A, 1)
+
+        dot_product_logit = (
+            torch.matmul(dot_product_proj_queries, dot_product_proj_tokens.transpose(-1, -2))
+            / self.log_scale.exp()
+        ) + bias
         if self.clamp_dot_product:
             dot_product_logit = torch.clamp(dot_product_logit, max=50000)
             dot_product_logit = torch.clamp(dot_product_logit, min=-50000)

@@ -259,6 +259,7 @@ class DeformableDETRSegmVL(DeformableDETR):
             outputs_l = self.model_language.forward_text(text_list, cache=cache)
             if "last_hidden_state_eot" in outputs_l:
                 features_l = outputs_l["last_hidden_state_eot"]
+                # print('succeeeee')
             else:
                 features_l = text_utils.reduce_language_feature(
                     outputs_l["last_hidden_state"],
@@ -491,6 +492,8 @@ class DeformableDETRSegmVL(DeformableDETR):
                 outputs_class = self.class_embed[lvl](inter_states[lvl], features_l)
             else:
                 outputs_class = self.class_embed[lvl](inter_states[lvl])
+            # from ape.layers import VisionLanguageAlign
+            # print("lvl_class", outputs_class.size(), f'min|max {outputs_class.min().item()},{outputs_class.max().item()}',inter_states[lvl].shape, features_l.shape, prompt)
             tmp = self.bbox_embed[lvl](inter_states[lvl])
             if reference.shape[-1] == 4:
                 tmp += reference
@@ -508,16 +511,21 @@ class DeformableDETRSegmVL(DeformableDETR):
             outputs_mask = torch.einsum("bqc,bchw->bqhw", mask_embeds, mask_features)
             outputs_masks.append(outputs_mask)
         outputs_class = torch.stack(outputs_classes)
+        # print("outputs_class", outputs_class.size(), outputs_mask.size())
         outputs_coord = torch.stack(outputs_coords)
+        # print(isinstance(self.class_embed[5], VisionLanguageAlign), len(self.class_embed))
+        torch.save(self.class_embed[5], '/home/dsh/class_embe.pth')
+        torch.save(self.model_language, '/home/dsh/model_languag.pth')
 
         outputs_mask = outputs_masks
         outputs_mask[-1] += 0.0 * sum(outputs_mask)
-
+        # print('len:', len(outputs_mask), outputs_mask[-1].size(), inter_states.shape[0], inter_states[-1].size())
         output = {
             "pred_logits": outputs_class[-1],
             "pred_boxes": outputs_coord[-1],
             "pred_masks": outputs_mask[-1],
             "init_reference": init_reference,
+            'vis_feat': inter_states[-1],
         }
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(
@@ -560,6 +568,7 @@ class DeformableDETRSegmVL(DeformableDETR):
             box_cls = output["pred_logits"]
             box_pred = output["pred_boxes"]
             mask_pred = output["pred_masks"]
+            vis_feat = output['vis_feat']
 
             start_time = time.perf_counter()
 
@@ -641,13 +650,16 @@ class DeformableDETRSegmVL(DeformableDETR):
                         [x[filter_ind] for x, filter_ind in zip(semantic_mask_pred, filter_inds)],
                         dim=0,
                     )
-
+                    vis_feat_filtered = torch.stack(
+                        [x[filter_ind] for x, filter_ind in zip(vis_feat, filter_inds)], dim=0
+                    )
+                # print('sem postprocess', semantic_box_cls.size(), semantic_mask_pred.size(), vis_feat_filtered.size())
                 if do_postprocess:
                     assert (
                         not torch.jit.is_scripting()
                     ), "Scripting is not supported for postprocess."
                     semantic_results = DeformableDETRSegmVL._postprocess_semantic(
-                        semantic_box_cls, semantic_mask_pred, batched_inputs, images
+                        semantic_box_cls, semantic_mask_pred, batched_inputs, images, vis=vis_feat_filtered
                     )
                     if (
                         dataset_id >= 0
@@ -876,10 +888,11 @@ class DeformableDETRSegmVL(DeformableDETR):
         images,
         pano_temp=0.06,
         transform_eval=True,
+        vis=None,
     ):
         processed_results = []
-        for mask_cls, mask_pred, input_per_image, image_size in zip(
-            mask_clses, mask_preds, batched_inputs, images.image_sizes
+        for mask_cls, mask_pred, vi, input_per_image, image_size in zip(
+            mask_clses, mask_preds, vis, batched_inputs, images.image_sizes
         ):
             height = input_per_image.get("height", image_size[0])
             width = input_per_image.get("width", image_size[1])
@@ -890,10 +903,14 @@ class DeformableDETRSegmVL(DeformableDETR):
             if transform_eval:
                 mask_cls = F.softmax(mask_cls / T, dim=-1)  # already sigmoid
             mask_pred = mask_pred.sigmoid()
+            # print(mask_pred[:, 0, 0].sum())
             if mask_cls.size(1) > 1000:
                 mask_cls = mask_cls.cpu()
                 mask_pred = mask_pred.cpu()
+                vi = vi.cpu()
             result = torch.einsum("qc,qhw->chw", mask_cls, mask_pred)
+            vis_f = torch.einsum("qc,qhw->chw", vi, mask_pred)
+            vis_f /= mask_pred.sum(0)
 
             if True and False:
                 num_thing_classes = len(
@@ -911,7 +928,9 @@ class DeformableDETRSegmVL(DeformableDETR):
                 result = torch.cat([result_0, result_1], dim=0)
 
             r = sem_seg_postprocess(result, image_size, height, width)
-            processed_results.append({"sem_seg": r})
+            vis_e = sem_seg_postprocess(vis_f, image_size, height, width)
+            # print(r.shape, vis_e.shape)
+            processed_results.append({"sem_seg": r, 'vis_feat': vis_e})
         return processed_results
 
     @staticmethod
