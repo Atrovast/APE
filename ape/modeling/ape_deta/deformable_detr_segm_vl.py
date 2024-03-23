@@ -514,8 +514,8 @@ class DeformableDETRSegmVL(DeformableDETR):
         # print("outputs_class", outputs_class.size(), outputs_mask.size())
         outputs_coord = torch.stack(outputs_coords)
         # print(isinstance(self.class_embed[5], VisionLanguageAlign), len(self.class_embed))
-        torch.save(self.class_embed[5], '/home/dsh/class_embe.pth')
-        torch.save(self.model_language, '/home/dsh/model_languag.pth')
+        # torch.save(self.class_embed[5], '/home/dsh/class_embe.pth')
+        # torch.save(self.model_language, '/home/dsh/model_languag.pth')
 
         outputs_mask = outputs_masks
         outputs_mask[-1] += 0.0 * sum(outputs_mask)
