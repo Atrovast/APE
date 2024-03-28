@@ -24,7 +24,8 @@
 </p>
 
 ```shell
-python demo/demo_lazy.py --config-file configs/LVISCOCOCOCOSTUFF_O365_OID_VGR_SA1B_REFCOCO_GQA_PhraseCut_Flickr30k/ape_deta/ape_deta_vitl_eva02_clip_vlf_lsj1024_cp_16x4_1080k.py --input ../datasets/360/bicycle/images_4/* --output out --confidence-threshold 0.08 --with-sseg --opts train.init_checkpoint='model_final.pth' model.model_language.cache_dir="" model.model_vision.select_box_nums_for_evaluation=500 model.model_vision.text_feature_bank_reset=True
+python demo/demo_lazy.py -i ../datasets/360/bicycle/images_4/* --feat-out ../datasets/360/bicycle/clip_feat/
+# python demo/demo_lazy.py --config-file configs/LVISCOCOCOCOSTUFF_O365_OID_VGR_SA1B_REFCOCO_GQA_PhraseCut_Flickr30k/ape_deta/ape_deta_vitl_eva02_clip_vlf_lsj1024_cp_16x4_1080k.py --input ../datasets/360/bicycle/images_4/* --output out --confidence-threshold 0.08 --with-sseg --opts train.init_checkpoint='model_final.pth' model.model_language.cache_dir="" model.model_vision.select_box_nums_for_evaluation=500 model.model_vision.text_feature_bank_reset=True
 ```
 
 
