@@ -86,6 +86,7 @@ class DeformableDETRSegmVL(DeformableDETR):
             "object_mask_threshold": 0.01,
             "overlap_threshold": 0.4,
         },
+        vis_out: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -93,7 +94,7 @@ class DeformableDETRSegmVL(DeformableDETR):
         self.instance_on = instance_on
         self.semantic_on = semantic_on
         self.panoptic_on = panoptic_on
-        self.vis_out = False
+        self.vis_out = vis_out
 
         if freeze_detr:
             for p in self.parameters():
@@ -660,7 +661,7 @@ class DeformableDETRSegmVL(DeformableDETR):
                         not torch.jit.is_scripting()
                     ), "Scripting is not supported for postprocess."
                     semantic_results = DeformableDETRSegmVL._postprocess_semantic(
-                        semantic_box_cls, semantic_mask_pred, batched_inputs, images, vis=vis_feat_filtered
+                        semantic_box_cls, semantic_mask_pred, batched_inputs, images, vis=vis_feat_filtered, vout=self.vis_out
                     )
                     if (
                         dataset_id >= 0
@@ -890,6 +891,7 @@ class DeformableDETRSegmVL(DeformableDETR):
         pano_temp=0.06,
         transform_eval=True,
         vis=None,
+        vout=False,
     ):
         processed_results = []
         for mask_cls, mask_pred, vi, input_per_image, image_size in zip(
@@ -909,7 +911,7 @@ class DeformableDETRSegmVL(DeformableDETR):
                 mask_cls = mask_cls.cpu()
                 mask_pred = mask_pred.cpu()
                 vi = vi.cpu()
-            result = torch.einsum("qc,qhw->chw", mask_cls, mask_pred) if self.vis_out else 1
+            result = torch.einsum("qc,qhw->chw", mask_cls, mask_pred) if vout else 1
             vis_f = torch.einsum("qc,qhw->chw", vi, mask_pred)
             vis_f /= mask_pred.sum(0)
 
@@ -928,7 +930,7 @@ class DeformableDETRSegmVL(DeformableDETR):
                 result_0 = result_0.mean(dim=0, keepdim=True)
                 result = torch.cat([result_0, result_1], dim=0)
 
-            r = sem_seg_postprocess(result, image_size, height, width) if self.vis_out else 1
+            r = sem_seg_postprocess(result, image_size, height, width) if vout else 1
             vis_e = sem_seg_postprocess(vis_f, image_size, height, width)
             # print(r.shape, vis_e.shape)
             processed_results.append({"sem_seg": r, 'vis_feat': vis_e})

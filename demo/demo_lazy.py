@@ -158,7 +158,7 @@ if __name__ == "__main__":
             args.input = glob.glob(os.path.expanduser(args.input[0]), recursive=True)
             assert args.input, "The input path(s) was not found"
         os.makedirs(args.feat_out, exist_ok=True)
-        for path in tqdm.tqdm(args.input, disable=not args.output):
+        for path in tqdm.tqdm(args.input):
             # use PIL, to be consistent with evaluation
             try:
                 img = read_image(path, format="BGR")
@@ -223,11 +223,11 @@ if __name__ == "__main__":
 
                     with open(out_filename + ".json", "w") as outp:
                         json.dump(results, outp)
-            else:
-                cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
-                cv2.imshow(WINDOW_NAME, visualized_output.get_image()[:, :, ::-1])
-                if cv2.waitKey(0) == 27:
-                    break  # esc to quit
+            # else:
+            #     cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
+            #     cv2.imshow(WINDOW_NAME, visualized_output.get_image()[:, :, ::-1])
+            #     if cv2.waitKey(0) == 27:
+            #         break  # esc to quit
     elif args.webcam:
         assert args.input is None, "Cannot have both --input and --webcam!"
         assert args.output is None, "output not yet supported with --webcam!"
