@@ -93,6 +93,7 @@ class DeformableDETRSegmVL(DeformableDETR):
         self.instance_on = instance_on
         self.semantic_on = semantic_on
         self.panoptic_on = panoptic_on
+        self.vis_out = False
 
         if freeze_detr:
             for p in self.parameters():
@@ -908,7 +909,7 @@ class DeformableDETRSegmVL(DeformableDETR):
                 mask_cls = mask_cls.cpu()
                 mask_pred = mask_pred.cpu()
                 vi = vi.cpu()
-            result = torch.einsum("qc,qhw->chw", mask_cls, mask_pred)
+            result = torch.einsum("qc,qhw->chw", mask_cls, mask_pred) if self.vis_out else 1
             vis_f = torch.einsum("qc,qhw->chw", vi, mask_pred)
             vis_f /= mask_pred.sum(0)
 
@@ -927,7 +928,7 @@ class DeformableDETRSegmVL(DeformableDETR):
                 result_0 = result_0.mean(dim=0, keepdim=True)
                 result = torch.cat([result_0, result_1], dim=0)
 
-            r = sem_seg_postprocess(result, image_size, height, width)
+            r = sem_seg_postprocess(result, image_size, height, width) if self.vis_out else 1
             vis_e = sem_seg_postprocess(vis_f, image_size, height, width)
             # print(r.shape, vis_e.shape)
             processed_results.append({"sem_seg": r, 'vis_feat': vis_e})

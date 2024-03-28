@@ -192,6 +192,7 @@ class VisualizationDemo(object):
         with_mask=True,
         with_sseg=True,
         name=None,
+        visual_output=False,
         feature_output=None,
     ):
         """
@@ -237,16 +238,15 @@ class VisualizationDemo(object):
                 # vis_output = visualizer.draw_sem_seg(
                 #     predictions["sem_seg"].argmax(dim=0).to(self.cpu_device)
                 # )
-
-                sem_seg = predictions["sem_seg"].to(self.cpu_device)
-                # sem_seg = opencv_grabcut(image, sem_seg, iter=10)
-                # sem_seg = cuda_grabcut(image, sem_seg > 0.5, iter=5, gamma=10, iou_threshold=0.1)
-                sem_seg = torch.cat((sem_seg, torch.ones_like(sem_seg[0:1, ...]) * 0.1), dim=0)
-                sem_seg = sem_seg.argmax(dim=0)
-                # torch.save(predictions["vis_feat"].to('cpu'), f"/home/dsh/vis_feat.pt")
                 torch.save(predictions["vis_feat"].half().cpu(), os.path.join(feature_output, f"{name}.pt"))
-
-                vis_output = visualizer.draw_sem_seg(sem_seg)
+                if visual_output:
+                    sem_seg = predictions["sem_seg"].to(self.cpu_device)
+                    # sem_seg = opencv_grabcut(image, sem_seg, iter=10)
+                    # sem_seg = cuda_grabcut(image, sem_seg > 0.5, iter=5, gamma=10, iou_threshold=0.1)
+                    sem_seg = torch.cat((sem_seg, torch.ones_like(sem_seg[0:1, ...]) * 0.1), dim=0)
+                    sem_seg = sem_seg.argmax(dim=0)
+                    # torch.save(predictions["vis_feat"].to('cpu'), f"/home/dsh/vis_feat.pt")
+                    vis_output = visualizer.draw_sem_seg(sem_seg)
             if "instances" in predictions and (with_box or with_mask):
                 instances = predictions["instances"].to(self.cpu_device)
 

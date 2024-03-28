@@ -171,9 +171,10 @@ model.model_vision.stuff_dataset_learn_thing = False
 model.model_vision.stuff_prob_thing = 0.9
 model.model_vision.transformer.proposal_ambiguous = 1
 
-model.model_vision.instance_on = True
+model.model_vision.instance_on = False
 model.model_vision.semantic_on = True
 model.model_vision.panoptic_on = False
+model.model_vision.vis_out = False
 
 train.max_iter = 1080000
 train.eval_period = 1080000

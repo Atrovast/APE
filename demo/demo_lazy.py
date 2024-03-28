@@ -77,7 +77,7 @@ def get_parser():
     )
     parser.add_argument(
         "--output", '-o',
-        default='output',
+        default='',
         help="A directory to save output visualizations. "
         "If not given, will show output in an OpenCV window.",
     )
@@ -139,6 +139,8 @@ if __name__ == "__main__":
     mp.set_start_method("spawn", force=True)
     args = get_parser().parse_args()
     args.opts.append(f"model.model_vision.select_box_nums_for_evaluation={args.box_num}")
+    if args.output:
+        args.opts.append(f"model.model_vision.vis_out=True")
     setup_logger(name="fvcore")
     setup_logger(name="ape")
     logger = setup_logger()
@@ -173,6 +175,7 @@ if __name__ == "__main__":
                 with_mask=args.with_mask,
                 with_sseg=args.with_sseg,
                 name=os.path.splitext(os.path.basename(path))[0],
+                visual_output=True if args.output else False,
                 feature_output=args.feat_out,
             )
             logger.info(
