@@ -30,16 +30,21 @@ pip3 install -r requirements.txt
 python3 -m pip install -e .
 ```
 
-3. Download the `APE-L_D` checkpoint (also referred to as `APE-D` in older versions) and place it in the root directory. <a href="https://huggingface.co/shenyunhang/APE/blob/main/configs/LVISCOCOCOCOSTUFF_O365_OID_VGR_SA1B_REFCOCO_GQA_PhraseCut_Flickr30k/ape_deta/ape_deta_vitl_eva02_clip_vlf_lsj1024_cp_16x4_1080k_mdl_20230829_162438/model_final.pth">HF link</a> 
+3. Download the `APE-L_D` checkpoint (also referred to as `APE-D` in older versions) and place it in the root directory, keeping it named as `model_final.pth`. <a href="https://huggingface.co/shenyunhang/APE/blob/main/configs/LVISCOCOCOCOSTUFF_O365_OID_VGR_SA1B_REFCOCO_GQA_PhraseCut_Flickr30k/ape_deta/ape_deta_vitl_eva02_clip_vlf_lsj1024_cp_16x4_1080k_mdl_20230829_162438/model_final.pth">HF link</a> 
 
 
 ## :arrow_forward: Extract the Pixel-Aligned Semantic Feature for Images
-
+You can run this single command to extract pixel-aligned semantic features for images:
 ```shell
 python demo/demo_lazy.py -i ../datasets/360/bicycle/images_4/* --feat-out ../datasets/360/bicycle/clip_feat/
-# Use * for the -i option to process multiple images (to iterate through all the images in the folder).
-# Alternatively, you can specify multiple images explicitly:
-# python demo/demo_lazy.py -i img1.png img2.png img3.png --feat-out ../datasets/360/bicycle/clip_feat/
+```
+- `-i` or `--input`: Specifies the input images path.
+- `--feat-out`: Specifies the output path for the extracted features.
+
+For the -i option, use `*` to process all files in an image folder. Alternatively, you can specify individual images:
+
+```shell
+python demo/demo_lazy.py -i img1.png img2.png img3.png --feat-out ../datasets/360/bicycle/clip_feat/
 ```
 
 
