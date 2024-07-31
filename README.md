@@ -19,7 +19,7 @@ This repository contains a modified implementation of the CVPR 2024 paper *APE: 
 1. Clone the APE repository from GitHub:
 
 ```bash
-git clone https://github.com/shenyunhang/APE
+git clone https://github.com/Atrovast/APE
 cd APE
 ```
 
