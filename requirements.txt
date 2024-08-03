@@ -1,13 +1,13 @@
 git+https://github.com/facebookresearch/detectron2
 git+https://github.com/IDEA-Research/detrex
 git+https://github.com/openai/CLIP
-transformers==4.32.1
+transformers
 cython
 opencv-python
 scipy
 einops
 lvis
 fairscale
-xformers==0.0.18
+xformers==0.0.24
 apex
 

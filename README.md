@@ -29,6 +29,7 @@ cd APE
 pip3 install -r requirements.txt
 python3 -m pip install -e .
 ```
+You can install the dependencies directly into the GOI environment without conflicts.
 
 3. Download the `APE-L_D` checkpoint (also referred to as `APE-D` in older versions) and place it in the root directory, keeping it named as `model_final.pth`. <a href="https://huggingface.co/shenyunhang/APE/blob/main/configs/LVISCOCOCOCOSTUFF_O365_OID_VGR_SA1B_REFCOCO_GQA_PhraseCut_Flickr30k/ape_deta/ape_deta_vitl_eva02_clip_vlf_lsj1024_cp_16x4_1080k_mdl_20230829_162438/model_final.pth">HF link</a> 
 
