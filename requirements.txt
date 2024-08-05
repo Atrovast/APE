@@ -8,6 +8,6 @@ scipy
 einops
 lvis
 fairscale
-xformers==0.0.22  # for torch 2.0.1. Please check https://github.com/facebookresearch/xformers to find xformers that are compatible with the existing pytorch version in your environment.
+xformers==0.0.24  # for torch 2.2.0. Please check https://github.com/facebookresearch/xformers to find xformers that are compatible with the existing pytorch version in your environment.
 apex
 
