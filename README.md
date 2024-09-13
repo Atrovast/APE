@@ -47,6 +47,7 @@ For the -i option, use `*` to process all files in an image folder. Alternativel
 ```shell
 python demo/demo_lazy.py -i img1.png img2.png img3.png --feat-out ../datasets/360/bicycle/clip_feat/
 ```
+**Due to the high dimensionality of pixel-aligned feature encoded by APE, we tend to use lower resolution (< 1.6k) images for encoding (i.e. images_4 folder for Mip360 dataset)**
 
 
 ## :black_nib: Citation
