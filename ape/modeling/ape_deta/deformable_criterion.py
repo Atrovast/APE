@@ -100,9 +100,9 @@ class DeformableCriterion(SetCriterion):
         self.use_fed_loss = use_fed_loss
         if self.use_fed_loss:
             fed_loss_cls_weights = get_fed_loss_cls_weights()
-            logger.info(
-                f"fed_loss_cls_weights: {fed_loss_cls_weights.size()} num_classes: {num_classes}"
-            )
+            # logger.info(
+            #     f"fed_loss_cls_weights: {fed_loss_cls_weights.size()} num_classes: {num_classes}"
+            # )
 
             if len(fed_loss_cls_weights) < num_classes:
                 if fed_loss_pad_type == "max":
@@ -122,11 +122,11 @@ class DeformableCriterion(SetCriterion):
                         fed_loss_cls_weights, int(num_classes * 7.0 / 10)
                     )[0].item()
 
-                logger.info(
-                    f"pad fed_loss_cls_weights with type {fed_loss_pad_type} and value {fed_loss_pad_value}"
-                )
-                if getattr(self, "fed_loss_pad_classes", None) is not None:
-                    logger.info(f"pad fed_loss_classes with {self.fed_loss_pad_classes}")
+                # logger.info(
+                #     f"pad fed_loss_cls_weights with type {fed_loss_pad_type} and value {fed_loss_pad_value}"
+                # )
+                # if getattr(self, "fed_loss_pad_classes", None) is not None:
+                #     logger.info(f"pad fed_loss_classes with {self.fed_loss_pad_classes}")
                 fed_loss_cls_weights = torch.cat(
                     (
                         fed_loss_cls_weights,
@@ -138,10 +138,10 @@ class DeformableCriterion(SetCriterion):
                     dim=0,
                 )
 
-                logger.info(f"fed_loss_cls_weights: {fed_loss_cls_weights[-100:]}")
-                logger.info(
-                    f"fed_loss_cls_weights: {fed_loss_cls_weights.size()} num_classes: {num_classes}"
-                )
+                # logger.info(f"fed_loss_cls_weights: {fed_loss_cls_weights[-100:]}")
+                # logger.info(
+                #     f"fed_loss_cls_weights: {fed_loss_cls_weights.size()} num_classes: {num_classes}"
+                # )
 
             assert (
                 len(fed_loss_cls_weights) == self.num_classes
