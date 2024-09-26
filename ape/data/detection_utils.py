@@ -59,7 +59,7 @@ def get_fed_loss_cls_weights(dataset_names: Union[str, List[str]], freq_weight_p
             )
         )
         return load_fed_loss_cls_weights(class_freq_path, freq_weight_power)
-    logger.info("Using builtin metadata 'image_count' for dataset '{}'".format(dataset_names))
+    # logger.info("Using builtin metadata 'image_count' for dataset '{}'".format(dataset_names))
 
     check_metadata_consistency("class_image_count", dataset_names)
 
@@ -109,7 +109,7 @@ def get_fed_loss_cls_weights_v2(dataset_names: Union[str, List[str]], freq_weigh
                 )
             )
 
-        logger.info("Using builtin metadata 'image_count' for dataset '{}'".format(dataset_name))
+        # logger.info("Using builtin metadata 'image_count' for dataset '{}'".format(dataset_name))
 
         # check_metadata_consistency("class_image_count", dataset_names)
 

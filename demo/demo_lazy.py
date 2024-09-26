@@ -81,6 +81,18 @@ def get_parser():
         help="A directory to save output visualizations. "
         "If not given, will show output in an OpenCV window.",
     )
+    parser.add_argument(
+        "--sample_step", '-s',
+        type=int,
+        default=1,
+        help="Sample a frame every s frames",
+    )
+    parser.add_argument(
+        "--down_res", '-r',
+        type=float,
+        default=1,
+        help="Downsample the input image by a factor of r",
+    )
 
     parser.add_argument(
         "--confidence-threshold", "-t",
@@ -155,13 +167,18 @@ if __name__ == "__main__":
 
     if args.input:
         if len(args.input) == 1:
-            args.input = glob.glob(os.path.expanduser(args.input[0]), recursive=True)
+            args.input = glob.glob(os.path.expanduser(args.input[0]) + "/*")
             assert args.input, "The input path(s) was not found"
         os.makedirs(args.feat_out, exist_ok=True)
+        args.input.sort()
+        if args.sample_step > 1:
+            args.input = args.input[::args.sample_step]
         for path in tqdm.tqdm(args.input):
             # use PIL, to be consistent with evaluation
             try:
                 img = read_image(path, format="BGR")
+                if args.down_res > 1:
+                    img = cv2.resize(img, dsize=None, fx=args.down_res, fy=args.down_res)
             except Exception as e:
                 print("*" * 60)
                 print("fail to open image: ", e)
