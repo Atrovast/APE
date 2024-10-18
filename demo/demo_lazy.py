@@ -123,7 +123,7 @@ def get_parser():
     parser.add_argument(
         "--box-num",
         type=int,
-        default=500,
+        default=200,
         help="Minimum score for instance predictions to be shown",
     )
 
@@ -179,6 +179,11 @@ if __name__ == "__main__":
                 img = read_image(path, format="BGR")
                 if args.down_res > 1:
                     img = cv2.resize(img, dsize=None, fx=args.down_res, fy=args.down_res)
+                elif args.down_res < 0:
+                    orig_h, orig_w = img.shape[:2]
+                    dscale = orig_w / 780 if orig_w > 780 else 1
+                    resolution = (int(orig_w / dscale), int(orig_h / dscale))
+                    img = cv2.resize(img, resolution)
             except Exception as e:
                 print("*" * 60)
                 print("fail to open image: ", e)
