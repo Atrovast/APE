@@ -177,7 +177,7 @@ if __name__ == "__main__":
             # use PIL, to be consistent with evaluation
             try:
                 img = read_image(path, format="BGR")
-                if args.down_res > 1:
+                if args.down_res > 0:
                     img = cv2.resize(img, dsize=None, fx=args.down_res, fy=args.down_res)
                 elif args.down_res < 0:
                     orig_h, orig_w = img.shape[:2]
